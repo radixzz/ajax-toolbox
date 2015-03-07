@@ -1,9 +1,11 @@
 /**
  * Created by Iván Juárez on 01/03/2015.
  */
-var asyncLoader = (function(doc){
+var AsyncToolbox = AsyncToolbox || {};
+
+var AsyncToolbox.loader = (function(document){
   "use strict";
-  var _appendTarget = doc.getElementsByTagName("head")[0] || doc.documentElement,
+  var _appendTarget = document.getElementsByTagName("head")[0] || document.documentElement,
       _totalProgress = 0,
       _totalBytes = 0,
       _downloadedBytes = 0,
@@ -78,7 +80,7 @@ var asyncLoader = (function(doc){
   }
 
   function injectDOMScript(resource) {
-    var script = doc.createElement('script');
+    var script = document.createElement('script');
     _appendTarget.insertBefore(script, _appendTarget.lastChild);
     var onLoad = function(event) {
       console.log('event', event);
