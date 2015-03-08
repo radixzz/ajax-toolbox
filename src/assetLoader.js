@@ -3,9 +3,9 @@
  */
 var ajaxToolbox = ajaxToolbox || {};
 
-ajaxToolbox.assetLoader = ajaxToolbox.assetLoader || (function(document){
+ajaxToolbox.assetLoader = ajaxToolbox.assetLoader || (function(doc){
   "use strict";
-  var _appendTarget = document.getElementsByTagName("head")[0] || document.documentElement,
+  var _appendTarget = doc.getElementsByTagName("head")[0] || doc.documentElement,
       _totalProgress = 0,
       _totalBytes = 0,
       _downloadedBytes = 0,
@@ -22,15 +22,11 @@ ajaxToolbox.assetLoader = ajaxToolbox.assetLoader || (function(document){
       _totalProgress = _downloadedBytes / _totalBytes;
       if (typeof _onProgressCallback == 'function') {
         _onProgressCallback({
-          progress: getCurrentProgress(),
+          progress: _totalProgress,
           resource: resource
         });
       }
     }
-  }
-
-  function getCurrentProgress(){
-    return _totalProgress * 100;
   }
 
   function onDownloadComplete(event, resource) {
@@ -55,8 +51,7 @@ ajaxToolbox.assetLoader = ajaxToolbox.assetLoader || (function(document){
     for (var i = 0; i < _completedResources.length; i++) {
       var resource = _completedResources[i];
       if (! resource.resolved) {
-        var canBeResolved = resource.requires && 
-          isResourceDependenciesMet(resource) || !resource.requires;
+        var canBeResolved = resource.requires && isResourceDependenciesMet(resource) || !resource.requires;
         if (canBeResolved) {
           resolveResource(resource);
         }
@@ -65,7 +60,7 @@ ajaxToolbox.assetLoader = ajaxToolbox.assetLoader || (function(document){
   }
 
   function onResourceLoaded(resource) {
-    console.log('Resource ready to use:', resource.src, _manifest.length);
+    console.log('Resource ready to use:', resource.src);
     resource.injected = true;
     _injectedResources++;
     if (_injectedResources === _manifest.length) {
@@ -81,53 +76,30 @@ ajaxToolbox.assetLoader = ajaxToolbox.assetLoader || (function(document){
   }
 
   function injectDOMScript(resource) {
-    var script = document.createElement('script');
+    var script = doc.createElement('script');
     _appendTarget.insertBefore(script, _appendTarget.lastChild);
-    var onLoad = function(event) {
-      console.log('event', event);
-      onResourceLoaded(resource);
-    };
-
-    if (resource.isXHR) {
-      script.text = resource.responseText;
-      script.async = false;
-      onLoad();
-    } else {
-      _appendTarget.insertBefore(script, _appendTarget.lastChild);
-      script.onload = onLoad;
-      script.onreadystatechange = function() {
-        if (script.readyState == "loaded" || script.readyState == "complete") {
-          script.onload = script.onreadystatechange = null;
-          onLoad();
-        }
-      };
-      script.src = resource.src;
-    }
+    script.text = resource.responseText;
+    script.async = false;
+    onResourceLoaded(resource);
   }
 
   function download(resource) {
     var request = new XMLHttpRequest();
-    resource.isXHR = request.onprogress === null;
-    if (resource.isXHR) {
-      request.onprogress = function (event) {
-        onDownloadProgress(event, resource);
-      };
-
-      request.onreadystatechange = function () {
-        if (request.readyState == 2 && request.status == 200) {
-          resource.totalBytes = parseInt(request.getResponseHeader('Content-Length'));
-          _totalBytes += resource.totalBytes;
-          _processedRequests++;
-        } else if (request.readyState == 4 && request.status == 200) {
-          request.onreadystatechange = null;
-          onDownloadComplete(request, resource);
-        }
-      };
-      request.open('GET', resource.src, true);
-      request.send();
-    } else {
-      injectDOMScript(resource);
-    }
+    request.onprogress = function (event) {
+      onDownloadProgress(event, resource);
+    };
+    request.onreadystatechange = function () {
+      if (request.readyState == 2 && request.status == 200) {
+        resource.totalBytes = parseInt(request.getResponseHeader('Content-Length'));
+        _totalBytes += resource.totalBytes;
+        _processedRequests++;
+      } else if (request.readyState == 4 && request.status == 200) {
+        request.onreadystatechange = null;
+        onDownloadComplete(request, resource);
+      }
+    };
+    request.open('GET', resource.src, true);
+    request.send();
   }
 
   function loadManifest( manifest ) {
@@ -152,15 +124,13 @@ ajaxToolbox.assetLoader = ajaxToolbox.assetLoader || (function(document){
     _processedRequests = 0;
     _totalBytes = 0;
     for (var i = 0; i < _manifest.length; i++) {
-      if (_manifest[i].isValid)
-      download(_manifest[i]);
+      if (_manifest[i].isValid) download(_manifest[i]);
     }
   }
 
   return {
     'VERSION': '0.1',
     start: start,
-    loadManifest: loadManifest,
-    currentProgress: getCurrentProgress
+    loadManifest: loadManifest
   }
 })(this.document);
