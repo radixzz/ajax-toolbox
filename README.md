@@ -1,10 +1,7 @@
 # Page Blender
-Enables navivation between pages without reloading the page. It assumes no extra features of content gathering such as json's so this method is SEO friendly.
-
+Enables simple navigation between pages without reloading the page. It assumes no extra features of content gathering such as json's so this method is SEO friendly.
 
 Initialization requires a function for onPageChange event and the HTMLElement in wich you want the content to change.
-
-onPageChange event is executed when the page content is about to be inserted into the DOM, here you can do all the logic of hidding and showing the new content.
 
 ```javascript
 AjaxToolbox.pageBlender.initialize({
@@ -12,6 +9,8 @@ AjaxToolbox.pageBlender.initialize({
 	containerElement: HTMLElement
 });
 ```
+
+onPageChange event is executed when the page content is about to be inserted into the DOM, here you can do all the logic of hidding and showing the new content.
 
 Initialization example:
 
