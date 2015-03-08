@@ -1,9 +1,9 @@
 /**
  * Created by Iván Juárez on 01/03/2015.
  */
-var AsyncToolbox = AsyncToolbox || {};
+var ajaxToolbox = ajaxToolbox || {};
 
-var AsyncToolbox.loader = (function(document){
+ajaxToolbox.assetLoader = ajaxToolbox.assetLoader || (function(document){
   "use strict";
   var _appendTarget = document.getElementsByTagName("head")[0] || document.documentElement,
       _totalProgress = 0,
@@ -55,7 +55,8 @@ var AsyncToolbox.loader = (function(document){
     for (var i = 0; i < _completedResources.length; i++) {
       var resource = _completedResources[i];
       if (! resource.resolved) {
-        var canBeResolved = resource.requires && isResourceDependenciesMet(resource) || !resource.requires;
+        var canBeResolved = resource.requires && 
+          isResourceDependenciesMet(resource) || !resource.requires;
         if (canBeResolved) {
           resolveResource(resource);
         }
